@@ -1,4 +1,4 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+﻿// Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "RopeParkerCharacter.h"
 #include "Engine/LocalPlayer.h"
@@ -30,10 +30,11 @@ ARopeParkerCharacter::ARopeParkerCharacter()
 	// instead of recompiling to adjust them
 	GetCharacterMovement()->JumpZVelocity = 500.f;
 	GetCharacterMovement()->AirControl = 0.8f;
-	GetCharacterMovement()->MaxWalkSpeed = 500.f;
+	GetCharacterMovement()->FallingLateralFriction = 0.1f;
+	GetCharacterMovement()->MaxWalkSpeed = 600.f;
 	GetCharacterMovement()->MinAnalogWalkSpeed = 20.f;
 	GetCharacterMovement()->BrakingDecelerationWalking = 2000.f;
-	GetCharacterMovement()->BrakingDecelerationFalling = 1500.0f;
+	GetCharacterMovement()->BrakingDecelerationFalling = 500.0f;
 
 	// Create a camera boom (pulls in towards the player if there is a collision)
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
@@ -54,7 +55,8 @@ void ARopeParkerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInpu
 {
 	// Set up action bindings
 	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent)) {
-		
+		EnhancedInputComponent->BindAction(Booster, ETriggerEvent::Started, this, &ARopeParkerCharacter::BoostAction);
+
 		// Jumping
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &ACharacter::Jump);
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
@@ -65,6 +67,8 @@ void ARopeParkerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInpu
 
 		// Looking
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &ARopeParkerCharacter::Look);
+
+
 	}
 	else
 	{
@@ -131,3 +135,21 @@ void ARopeParkerCharacter::DoJumpEnd()
 	// signal the character to stop jumping
 	StopJumping();
 }
+
+void ARopeParkerCharacter::BoostAction()
+{
+	UE_LOG(LogTemp, Display, TEXT("Moving upppppp"));
+	float TotalBoost = BoostStrength - GetCharacterMovement()->Velocity.Z;
+
+	if (GetCharacterMovement()->IsFalling())
+	{
+		// Already in air, just add Z
+		GetCharacterMovement()->Velocity.Z += TotalBoost;
+	}
+	else
+	{
+		// On ground → launch character
+		LaunchCharacter(FVector(0, 0, BoostStrength), false, true);
+	}
+}
+

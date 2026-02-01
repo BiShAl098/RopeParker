@@ -49,6 +49,9 @@ protected:
 	UPROPERTY(EditAnywhere, Category="Input")
 	UInputAction* MouseLookAction;
 
+	UPROPERTY(EditAnywhere, Category = "Input")
+	UInputAction* Booster;
+
 public:
 
 	/** Constructor */
@@ -85,6 +88,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category="Input")
 	virtual void DoJumpEnd();
 
+	UFUNCTION(BlueprintCallable, Category = "Input")
+	void BoostAction();
+
+
 public:
 
 	/** Returns CameraBoom subobject **/
@@ -92,5 +99,9 @@ public:
 
 	/** Returns FollowCamera subobject **/
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
+
+private:
+	UPROPERTY(EditAnywhere, Category = "Boost")
+	float BoostStrength = 1000.f;
 };
 
